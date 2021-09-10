@@ -1,0 +1,27 @@
+#+TITLE: usbRubber EDD Project Background Research
+#+AUTHOR: Garrett Comes
+#+DATE: 9/9/21
+#+OPTIONS: \n:t
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/org.css"/>
+
+#+BEGIN_abstract
+Example Abstract.
+#+END_abstract
+
+* Vocab
+*USB:* Universal Serial Bus
+
+* Introduction
+Many USB devices are trusted by default on computers today. These devices can be easily used for malicious things if you aren't careful. From electronically destroying your computer to stealing passwords or confidential data, plugging in arbitrary USB devices can lead to massive consequences. How can we defend against these attacks?
+
+* Examples
+USB Rubber Ducky
+[[file:img/usbRubberDucky.jpg]]
+Bash Bunny
+Shark Jack
+O.MG Cables
+LAN Turtle
+
+* Current Solutions
+duckhunt: [[https://github.com/pmsosa/duckhunt
+]]
