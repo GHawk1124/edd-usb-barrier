@@ -1,11 +1,12 @@
-#+TITLE: usbRubber EDD Project Background Research
-#+AUTHOR: Garrett Comes
+#+TITLE: USB Barrier EDD Project Background Research
+#+AUTHOR: Garrett Comes, Jack Baer
 #+DATE: 9/9/21
-#+OPTIONS: \n:t
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/org.css"/>
+#+OPTIONS: \n:t num:nil
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+EXPORT_FILE_NAME: ../pages/BackgroundResearch.html
 
 #+BEGIN_abstract
-Example Abstract.
+The Universal Serial Bus is no doubt one of the most important and successful inventions ever conceived, however, the notion that operating systems by default trust all devices is a dangerous concern. While it brings convenience to the comoplexitiy of translating data through electrical impulses over a wire, it also brings security concerns because the operating system never asks if they are plugging in what they think they are.
 #+END_abstract
 
 * Vocab
@@ -15,13 +16,19 @@ Example Abstract.
 Many USB devices are trusted by default on computers today. These devices can be easily used for malicious things if you aren't careful. From electronically destroying your computer to stealing passwords or confidential data, plugging in arbitrary USB devices can lead to massive consequences. How can we defend against these attacks?
 
 * Examples
-USB Rubber Ducky
-[[file:img/usbRubberDucky.jpg]]
-Bash Bunny
-Shark Jack
-O.MG Cables
-LAN Turtle
+- USB Rubber Ducky
+[[file:../org/img/usbRubberDucky.jpg]]
+- Bash Bunny
+[[file:../org/img/bashbunny.png]]
+- Shark Jack
+[[file:../org/img/sharkjack.jpg]]
+- O.MG Cables
+[[file:../org/img/omgcable.jpg]]
 
 * Current Solutions
-duckhunt: [[https://github.com/pmsosa/duckhunt
-]]
+** [[https://github.com/pmsosa/duckhunt][Duckhunt]]
+Duckhunt is software while will supposedly detect USB HID attacks and revoke access to the keyboard.
+** [[https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=&cad=rja&uact=8&ved=2ahUKEwjXiuDkn_XyAhXGop4KHberCgIQFnoECAMQAQ&url=https%3A%2F%2Fusbkill.com%2Fproducts%2Fusbkill-shield&usg=AOvVaw2mkdgacD4hXuEBvxRoRwLa][USBkillerProtection]]
+*** TODO USBKiller Protection is...
+** [[https://github.com/karelzak/util-linux/blob/master/sys-utils/dmesg.c][Dmesg]]
+*** TODO Dmesg is...

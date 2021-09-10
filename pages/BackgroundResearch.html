@@ -3,11 +3,11 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-09-09 Thu 15:18 -->
+<!-- 2021-09-10 Fri 14:05 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>usbRubber EDD Project Background Research</title>
-<meta name="author" content="Garrett Comes" />
+<title>USB Barrier EDD Project Background Research</title>
+<meta name="author" content="Garrett Comes, Jack Baer" />
 <meta name="generator" content="Org Mode" />
 <style>
   #content { max-width: 60em; margin: auto; }
@@ -193,74 +193,138 @@
     { background-color: #ffff00; color: #000000; font-weight: bold; }
   .org-svg { width: 90%; }
 </style>
-<link rel="stylesheet" type="text/css" href="css/org.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
 </head>
 <body>
 <div id="content" class="content">
-<h1 class="title">usbRubber EDD Project Background Research</h1>
+<h1 class="title">USB Barrier EDD Project Background Research</h1>
 <div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org378aba1">1. Vocab</a></li>
-<li><a href="#orgec24727">2. Introduction</a></li>
-<li><a href="#org459bd48">3. Examples</a></li>
-<li><a href="#org0251015">4. Current Solutions</a></li>
+<li><a href="#org64273f0">Vocab</a></li>
+<li><a href="#org96d06f5">Introduction</a></li>
+<li><a href="#org91d7c65">Examples</a></li>
+<li><a href="#org8c1da6a">Current Solutions</a>
+<ul>
+<li><a href="#orgadd9a4d">Duckhunt</a></li>
+<li><a href="#orgd2ba7c2">USBkillerProtection</a>
+<ul>
+<li><a href="#orgd888bd1"><span class="todo TODO">TODO</span> USBKiller Protection is&#x2026;</a></li>
+</ul>
+</li>
+<li><a href="#org7f8cd84">Dmesg</a>
+<ul>
+<li><a href="#org4a35a29"><span class="todo TODO">TODO</span> Dmesg is&#x2026;</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
-<div class="abstract" id="org6d0d0b3">
+<div class="abstract" id="orgbdde68c">
 <p>
-Example Abstract.<br />
+The Universal Serial Bus is no doubt one of the most important and successful inventions ever conceived, however, the notion that operating systems by default trust all devices is a dangerous concern. While it brings convenience to the comoplexitiy of translating data through electrical impulses over a wire, it also brings security concerns because the operating system never asks if they are plugging in what they think they are.<br />
 </p>
 
 </div>
 
-<div id="outline-container-org378aba1" class="outline-2">
-<h2 id="org378aba1"><span class="section-number-2">1.</span> Vocab</h2>
-<div class="outline-text-2" id="text-1">
+<div id="outline-container-org64273f0" class="outline-2">
+<h2 id="org64273f0">Vocab</h2>
+<div class="outline-text-2" id="text-org64273f0">
 <p>
 <b>USB:</b> Universal Serial Bus<br />
 </p>
 </div>
 </div>
 
-<div id="outline-container-orgec24727" class="outline-2">
-<h2 id="orgec24727"><span class="section-number-2">2.</span> Introduction</h2>
-<div class="outline-text-2" id="text-2">
+<div id="outline-container-org96d06f5" class="outline-2">
+<h2 id="org96d06f5">Introduction</h2>
+<div class="outline-text-2" id="text-org96d06f5">
 <p>
 Many USB devices are trusted by default on computers today. These devices can be easily used for malicious things if you aren&rsquo;t careful. From electronically destroying your computer to stealing passwords or confidential data, plugging in arbitrary USB devices can lead to massive consequences. How can we defend against these attacks?<br />
 </p>
 </div>
 </div>
 
-<div id="outline-container-org459bd48" class="outline-2">
-<h2 id="org459bd48"><span class="section-number-2">3.</span> Examples</h2>
-<div class="outline-text-2" id="text-3">
-<p>
-USB Rubber Ducky<br />
-<img src="img/usbRubberDucky.jpg" alt="usbRubberDucky.jpg" /><br />
-Bash Bunny<br />
-Shark Jack<br />
-O.MG Cables<br />
-LAN Turtle<br />
+<div id="outline-container-org91d7c65" class="outline-2">
+<h2 id="org91d7c65">Examples</h2>
+<div class="outline-text-2" id="text-org91d7c65">
+<ul class="org-ul">
+<li>USB Rubber Ducky<br /></li>
+</ul>
+
+<div id="orgaca190b" class="figure">
+<p><img src="../org/img/usbRubberDucky.jpg" alt="usbRubberDucky.jpg" /><br />
 </p>
+</div>
+<ul class="org-ul">
+<li>Bash Bunny<br /></li>
+</ul>
+
+<div id="orgcc77dd1" class="figure">
+<p><img src="../org/img/bashbunny.png" alt="bashbunny.png" /><br />
+</p>
+</div>
+<ul class="org-ul">
+<li>Shark Jack<br /></li>
+</ul>
+
+<div id="org33a5035" class="figure">
+<p><img src="../org/img/sharkjack.jpg" alt="sharkjack.jpg" /><br />
+</p>
+</div>
+<ul class="org-ul">
+<li>O.MG Cables<br /></li>
+</ul>
+
+<div id="org3ca7a95" class="figure">
+<p><img src="../org/img/omgcable.jpg" alt="omgcable.jpg" /><br />
+</p>
+</div>
 </div>
 </div>
 
-<div id="outline-container-org0251015" class="outline-2">
-<h2 id="org0251015"><span class="section-number-2">4.</span> Current Solutions</h2>
-<div class="outline-text-2" id="text-4">
+<div id="outline-container-org8c1da6a" class="outline-2">
+<h2 id="org8c1da6a">Current Solutions</h2>
+<div class="outline-text-2" id="text-org8c1da6a">
+</div>
+<div id="outline-container-orgadd9a4d" class="outline-3">
+<h3 id="orgadd9a4d"><a href="https://github.com/pmsosa/duckhunt">Duckhunt</a></h3>
+<div class="outline-text-3" id="text-orgadd9a4d">
 <p>
-duckhunt: <a href="https://github.com/pmsosa/duckhunt%20">https://github.com/pmsosa/duckhunt%20</a><br />
+Duckhunt is software while will supposedly detect USB HID attacks and revoke access to the keyboard.<br />
 </p>
+</div>
+</div>
+<div id="outline-container-orgd2ba7c2" class="outline-3">
+<h3 id="orgd2ba7c2"><a href="https://www.google.com/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=&amp;cad=rja&amp;uact=8&amp;ved=2ahUKEwjXiuDkn_XyAhXGop4KHberCgIQFnoECAMQAQ&amp;url=https%3A%2F%2Fusbkill.com%2Fproducts%2Fusbkill-shield&amp;usg=AOvVaw2mkdgacD4hXuEBvxRoRwLa">USBkillerProtection</a></h3>
+<div class="outline-text-3" id="text-orgd2ba7c2">
+</div>
+<div id="outline-container-orgd888bd1" class="outline-4">
+<h4 id="orgd888bd1"><span class="todo TODO">TODO</span> USBKiller Protection is&#x2026;</h4>
+</div>
+</div>
+<div id="outline-container-org7f8cd84" class="outline-3">
+<h3 id="org7f8cd84"><a href="https://github.com/karelzak/util-linux/blob/master/sys-utils/dmesg.c">Dmesg</a></h3>
+<div class="outline-text-3" id="text-org7f8cd84">
+</div>
+<div id="outline-container-org4a35a29" class="outline-4">
+<h4 id="org4a35a29"><span class="todo TODO">TODO</span> Dmesg is&#x2026;</h4>
+</div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="date">Date: 9/9/21</p>
-<p class="author">Author: Garrett Comes</p>
-<p class="date">Created: 2021-09-09 Thu 15:18</p>
+<p class="author">Author: Garrett Comes, Jack Baer</p>
+<p class="date">Created: 2021-09-10 Fri 14:05</p>
 </div>
 </body>
 </html>
