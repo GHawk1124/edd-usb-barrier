@@ -1,7 +1,0 @@
-[package]
-name = "edd-usb-barrier"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-libusb = "0.2.2"
