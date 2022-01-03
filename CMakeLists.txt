@@ -16,6 +16,10 @@ if (APPLE)
         /opt/homebrew/include
         /opt/homebrew/include/SDL2
     )
+elseif (UNIX AND NOT APPLE)
+    include_directories(
+      /usr/include/SDL2
+    )
 endif()
 
 # set common source
