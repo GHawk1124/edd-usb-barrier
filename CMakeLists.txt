@@ -9,7 +9,6 @@ include_directories(
 )
 
 if (APPLE)
-    # for <GLFW/glfw3.h>
     include_directories(
         /usr/local/include
         /opt/local/include
@@ -24,20 +23,20 @@ endif()
 
 # set common source
 file(GLOB SRC
-    ./imgui/*.h
-    ./imgui/*.cpp
+    ./external/imgui/*.h
+    ./external/imgui/*.cpp
 )
 
 # set specific source and other option for platform
 if (WIN32)
     file (GLOB PLATFORM_SRC
-        ./imgui/backends/imgui_impl_sdl.*
+        ./external/imgui/backends/imgui_impl_sdl.*
         ./src/win/main.cpp
     )
 elseif (UNIX)
     file (GLOB PLATFORM_SRC
-        ./imgui/backends/imgui_impl_sdl.*
-        ./imgui/backends/imgui_impl_sdlrenderer.*
+        ./external/imgui/backends/imgui_impl_sdl.*
+        ./external/imgui/backends/imgui_impl_sdlrenderer.*
         ./src/unix/main.cpp
     )
 endif()
@@ -46,7 +45,7 @@ endif()
 if (APPLE)
     link_directories(
         /usr/local/lib
-        # /opt/local/lib
+        /opt/local/lib
         /opt/homebrew/lib
     )
 endif()
@@ -62,7 +61,6 @@ if (WIN32)
         # dxgi.lib
     # )
 elseif (APPLE)
-    # mac: brew install glfw3
     find_library(OPENGL_LIBRARY OpenGL REQUIRED)
     find_library(SDL_LIBRARY SDL2 REQUIRED)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
@@ -80,10 +78,9 @@ elseif (APPLE)
         ${COREVID_LIBRARY}
     )
 elseif (UNIX AND NOT APPLE)
-    # linux: sudo apt install libglfw3-dev
     target_link_libraries(${PROJECT_NAME}
         GL
-        SDL2 # use this lib name
+        SDL2
         dl
     )
 endif()
