@@ -4,8 +4,8 @@ project(edd_USB_Barrier)
 
 # add header path
 include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}/imgui
-	${CMAKE_CURRENT_SOURCE_DIR}/imgui/backends
+	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
+	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
 )
 
 if (APPLE)
@@ -14,6 +14,9 @@ if (APPLE)
         /opt/local/include
         /opt/homebrew/include
         /opt/homebrew/include/SDL2
+    )
+elseif (WIN32)
+    include_directories(
     )
 elseif (UNIX AND NOT APPLE)
     include_directories(
