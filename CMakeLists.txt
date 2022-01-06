@@ -30,19 +30,11 @@ file(GLOB SRC
     ./external/imgui/*.cpp
 )
 
-# set specific source and other option for platform
-if (WIN32)
-    file (GLOB PLATFORM_SRC
-        ./external/imgui/backends/imgui_impl_sdl.*
-        ./src/win/main.cpp
-    )
-elseif (UNIX)
-    file (GLOB PLATFORM_SRC
-        ./external/imgui/backends/imgui_impl_sdl.*
-        ./external/imgui/backends/imgui_impl_sdlrenderer.*
-        ./src/unix/main.cpp
-    )
-endif()
+file (GLOB PLATFORM_SRC
+    ./external/imgui/backends/imgui_impl_sdl.*
+    ./external/imgui/backends/imgui_impl_sdlrenderer.*
+    ./src/main.cpp
+)
 
 # add link path
 if (APPLE)
