@@ -1,7 +1,11 @@
 #include "imgui.h"
+#include "imgui_freetype.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_sdlrenderer.h"
 #include <SDL.h>
+#include <freetype/freetype.h>
+#include <ft2build.h>
+
 #include <stdio.h>
 
 #if !SDL_VERSION_ATLEAST(2, 0, 17)
@@ -15,11 +19,26 @@ int main(int, char **) {
     return -1;
   }
 
+  float ddpi, hdpi, vdpi;
+  if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
+    fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n",
+            SDL_GetError());
+    exit(1);
+  }
+  float dpi_scaling = ddpi / 72.f;
+  SDL_Rect display_bounds;
+  if (SDL_GetDisplayUsableBounds(0, &display_bounds) != 0) {
+    fprintf(stderr, "Failed to obtain bounds of display 0: %s\n",
+            SDL_GetError());
+    exit(1);
+  }
+  int win_w = display_bounds.w * 7 / 8, win_h = display_bounds.h * 7 / 8;
+
   SDL_WindowFlags window_flags =
       (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
   SDL_Window *window =
       SDL_CreateWindow("USB Barrier", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+                       SDL_WINDOWPOS_CENTERED, win_w, win_h, window_flags);
 
   SDL_Renderer *renderer = SDL_CreateRenderer(
       window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
@@ -43,14 +62,6 @@ int main(int, char **) {
   ImGui_ImplSDL2_InitForSDLRenderer(window);
   ImGui_ImplSDLRenderer_Init(renderer);
 
-  // - AddFontFromFileTTF() will return the ImFont* so you can store it if you
-  // need to select the font among multiple.
-  // - If the file cannot be loaded, the function will return NULL. Please
-  // handle those errors in your application (e.g. use an assertion, or display
-  // an error and quit).
-  // - The fonts will be rasterized at a given size (w/ oversampling) and stored
-  // into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which
-  // ImGui_ImplXXXX_NewFrame below will call.
   // - Read 'docs/FONTS.md' for more instructions and details.
   // - Remember that in C/C++ if you want to include a backslash \ in a string
   // literal you need to write a double backslash \\ !
@@ -62,6 +73,9 @@ int main(int, char **) {
   // ImFont* font =
   // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
   // NULL, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != NULL);
+  io.Fonts->AddFontFromFileTTF(
+      "./assets/SourceCodePro/SourceCodePro-Regular.ttf", dpi_scaling * 7.0f,
+      NULL, NULL);
 
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

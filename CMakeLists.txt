@@ -1,11 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+# set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 project(edd_USB_Barrier)
+# SET (CMAKE_C_COMPILER_WORKS 1)
+# SET (CMAKE_CXX_COMPILER_WORKS 1)
 
 # add header path
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
+	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/misc/freetype
 )
 
 if (APPLE)
@@ -14,6 +17,7 @@ if (APPLE)
         /opt/local/include
         /opt/homebrew/include
         /opt/homebrew/include/SDL2
+        /opt/homebrew/include/freetype2
     )
 elseif (WIN32)
     include_directories(
@@ -28,6 +32,8 @@ endif()
 file(GLOB SRC
     ./external/imgui/*.h
     ./external/imgui/*.cpp
+    ./external/imgui/misc/freetype/*.h
+    ./external/imgui/misc/freetype/*.cpp
 )
 
 file (GLOB PLATFORM_SRC
@@ -61,6 +67,7 @@ elseif (APPLE)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVID_LIBRARY CoreVideo REQUIRED)
+    find_library(FREETYPE_LIBRARY freetype REQUIRED)
     message(${COCOA_LIBRARY})
     message(${IOKIT_LIBRARY})
     message(${COREVID_LIBRARY})
@@ -71,6 +78,7 @@ elseif (APPLE)
         ${COCOA_LIBRARY}
         ${IOKIT_LIBRARY}
         ${COREVID_LIBRARY}
+        ${FREETYPE_LIBRARY}
     )
 elseif (UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME}
