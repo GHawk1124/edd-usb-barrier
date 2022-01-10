@@ -1,8 +1,8 @@
-git pull
 mkdir -p build
 cd build || exit
 if [ "$1" == "darwin" ]; then
-  cmake ..
+ cmake -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ .. 
 elif [ "$1" == "windows" ]; then
  cmake -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc \
       -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++ .. 
