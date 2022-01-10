@@ -20,7 +20,7 @@ elseif (WIN32)
     )
 elseif (UNIX AND NOT APPLE)
     include_directories(
-      /usr/include/SDL2
+      /usr/local/include/SDL2
     )
 endif()
 
