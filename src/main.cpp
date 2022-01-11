@@ -193,11 +193,16 @@ int main(int, char **) {
     ImGui_ImplSDL2_NewFrame(window);
     ImGui::NewFrame();
 
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+
     // GUI Code Here
     {
       static float f = 0.0f;
       static int counter = 0;
-      ImGui::Begin("Hello, world!");
+      ImGui::Begin("Hello, world!", NULL,
+                   ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
       ImGui::Text("This is some useful text.");
       ImGui::Checkbox("Another Window", &show_another_window);
       ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
