@@ -39,7 +39,7 @@ file(GLOB SRC
 file (GLOB PLATFORM_SRC
     ./external/imgui/backends/imgui_impl_sdl.*
     ./external/imgui/backends/imgui_impl_sdlrenderer.*
-    ./src/main.cpp
+    ./src/*.cpp
 )
 
 # add link path
