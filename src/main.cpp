@@ -164,9 +164,12 @@ int main(int, char **) {
   // ImFont* font =
   // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
   // NULL, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != NULL);
-  io.Fonts->AddFontFromFileTTF(
-      "./assets/SourceCodePro/SourceCodePro-Regular.ttf", dpi_scaling * 6.0f,
-      NULL, NULL);
+  // io.Fonts->AddFontFromFileTTF(
+  // "./assets/SourceCodePro/SourceCodePro-Regular.ttf", dpi_scaling * 6.0f,
+  // NULL, NULL);
+  io.Fonts->AddFontFromMemoryCompressedTTF(
+      SourceCodePro_Regular_compressed_data,
+      SourceCodePro_Regular_compressed_size, dpi_scaling * 6.0f);
 
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);

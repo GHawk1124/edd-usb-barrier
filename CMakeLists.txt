@@ -5,7 +5,7 @@ execute_process(
   COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/assets/bin_fonts
 )
 execute_process(
-  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/btc.bin assets/SourceCodePro/SourceCodePro-Regular.ttf SourceCodePro-Regular
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/btc.bin ${CMAKE_CURRENT_SOURCE_DIR}/assets/SourceCodePro/SourceCodePro-Regular.ttf SourceCodePro_Regular
   OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/assets/bin_fonts/SourceCodePro-Regular.cpp
 )
 project(edd_USB_Barrier)
