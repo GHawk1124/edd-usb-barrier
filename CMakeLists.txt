@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 # set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+add_executable(btc.bin external/imgui/misc/fonts/binary_to_compressed_c.cpp)
+execute_process(
+  COMMAND mkdir -p ${CMAKE_CURRENT_SOURCE_DIR}/assets/bin_fonts
+)
+execute_process(
+  COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/build/btc.bin assets/SourceCodePro/SourceCodePro-Regular.ttf SourceCodePro-Regular
+  OUTPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/assets/bin_fonts/SourceCodePro-Regular.cpp
+)
 project(edd_USB_Barrier)
 # SET (CMAKE_C_COMPILER_WORKS 1)
 # SET (CMAKE_CXX_COMPILER_WORKS 1)
@@ -9,6 +17,7 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/misc/freetype
+	${CMAKE_CURRENT_SOURCE_DIR}/assets/bin_fonts
 )
 
 if (APPLE)

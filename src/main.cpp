@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 
+#include "fonts.h"
+
 #if !SDL_VERSION_ATLEAST(2, 0, 17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
 #endif
@@ -16,9 +18,7 @@ inline void Style() {
   ImGuiStyle &style = ImGui::GetStyle();
   ImVec4 *colors = style.Colors;
 
-  /// 0 = FLAT APPEARENCE
-  /// 1 = MORE "3D" LOOK
-  int is3D = 0;
+  int is3D = 1;
 
   colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
   colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
