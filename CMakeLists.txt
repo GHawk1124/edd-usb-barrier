@@ -25,6 +25,7 @@ elseif (WIN32)
 elseif (UNIX AND NOT APPLE)
     include_directories(
       /usr/local/include/SDL2
+      /usr/local/include/freetype2
     )
 endif()
 
@@ -85,5 +86,6 @@ elseif (UNIX AND NOT APPLE)
         GL
         SDL2
         dl
+        freetype
     )
 endif()
