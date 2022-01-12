@@ -1,8 +1,11 @@
 #include "imgui.h"
 #include "imgui_freetype.h"
-#include "imgui_impl_sdl.h"
-#include "imgui_impl_sdlrenderer.h"
-#include <SDL.h>
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES/gl2.h>
+#endif
+#include <GLFW/glfw3.h>
 #include <freetype/freetype.h>
 #include <ft2build.h>
 
@@ -10,9 +13,19 @@
 
 #include "fonts.h"
 
-#if !SDL_VERSION_ATLEAST(2, 0, 17)
-#error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
+#if defined(_MSC_VER) && (_MSC_VER >= 1900) &&                                 \
+    !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
+#pragma comment(lib, "legacy_stdio_definitions")
 #endif
+
+static void framebuffer_size_callback(GLFWwindow *window, int width,
+                                      int height) {
+  glViewport(0, 0, width, height);
+}
+
+static void glfw_error_callback(int error, const char *description) {
+  fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
 
 inline void Style() {
   ImGuiStyle &style = ImGui::GetStyle();
@@ -77,7 +90,7 @@ inline void Style() {
   style.PopupBorderSize = 1;
   style.FrameBorderSize = is3D;
 
-  style.WindowRounding = 3;
+  style.WindowRounding = 0;
   style.ChildRounding = 3;
   style.FrameRounding = 3;
   style.ScrollbarRounding = 2;
@@ -103,55 +116,95 @@ inline void Style() {
 }
 
 int main(int, char **) {
-  if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) !=
-      0) {
-    printf("Error: %s\n", SDL_GetError());
-    return -1;
+  glfwSetErrorCallback(glfw_error_callback);
+  if (!glfwInit()) {
+    return 1;
   }
 
-  float ddpi, hdpi, vdpi;
-  if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-    fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n",
-            SDL_GetError());
-    exit(1);
-  }
-  float dpi_scaling = ddpi / 72.f;
-  SDL_Rect display_bounds;
-  if (SDL_GetDisplayUsableBounds(0, &display_bounds) != 0) {
-    fprintf(stderr, "Failed to obtain bounds of display 0: %s\n",
-            SDL_GetError());
-    exit(1);
-  }
-  int win_w = display_bounds.w * 7 / 8, win_h = display_bounds.h * 7 / 8;
+  glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
+  glfwWindowHint(GLFW_DEPTH_BITS, 24);
+  glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
-  SDL_WindowFlags window_flags =
-      (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  SDL_Window *window =
-      SDL_CreateWindow("USB Barrier", SDL_WINDOWPOS_CENTERED,
-                       SDL_WINDOWPOS_CENTERED, win_w, win_h, window_flags);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  SDL_Renderer *renderer = SDL_CreateRenderer(
-      window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
-  if (renderer == NULL) {
-    SDL_Log("Error creating SDL_Renderer!");
-    return -1;
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+  const char *glsl_version = "#version 100";
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+#elif defined(__APPLE__)
+  const char *glsl_version = "#version 150";
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#elif defined(_WIN32)
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#else
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
+
+  float highDPIscaleFactor = 1.0;
+#ifdef _WIN32
+  // if it's a HighDPI monitor, try to scale everything
+  GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+  float xscale, yscale;
+  glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+  if (xscale > 1 || yscale > 1) {
+    highDPIscaleFactor = xscale;
+    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
   }
+#elif __APPLE__
+  // to prevent 1200x800 from becoming 2400x1600
+  glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+#endif
+
+  // float ddpi, hdpi, vdpi;
+  // if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
+  // fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n",
+  // SDL_GetError());
+  // exit(1);
+  // }
+  // float dpi_scaling = ddpi / 72.f;
+  // SDL_Rect display_bounds;
+  // if (SDL_GetDisplayUsableBounds(0, &display_bounds) != 0) {
+  // fprintf(stderr, "Failed to obtain bounds of display 0: %s\n",
+  // SDL_GetError());
+  // exit(1);
+  // }
+  // int win_w = display_bounds.w * 7 / 8, win_h = display_bounds.h * 7 / 8;
+  //
+  // SDL_WindowFlags window_flags =
+  // (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+  // SDL_Window *window =
+  // SDL_CreateWindow("USB Barrier", SDL_WINDOWPOS_CENTERED,
+  // SDL_WINDOWPOS_CENTERED, win_w, win_h, window_flags);
+
+  GLFWwindow *window = glfwCreateWindow(1280, 720, "USB BARRIER", NULL, NULL);
+  if (!window) {
+    return 1;
+  }
+
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwMakeContextCurrent(window);
+  glfwSwapInterval(1); // Enable VSYNC
+
+  // SDL_Renderer *renderer = SDL_CreateRenderer(
+  // window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+  // if (renderer == NULL) {
+  // SDL_Log("Error creating SDL_Renderer!");
+  // return -1;
+  // }
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
-  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable
-  // Keyboard Controls io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; //
-
-  // ImGui::StyleColorsDark();
-  // ImGui::StyleColorsClassic();
-
-  // SetupStyleFromHue();
   Style();
 
-  ImGui_ImplSDL2_InitForSDLRenderer(window);
-  ImGui_ImplSDLRenderer_Init(renderer);
+  ImGui_ImplGlfw_InitForOpenGL(window, true);
+  ImGui_ImplOpenGL3_Init(glsl_version);
 
   // - Read 'docs/FONTS.md' for more instructions and details.
   // - Remember that in C/C++ if you want to include a backslash \ in a string
@@ -169,28 +222,16 @@ int main(int, char **) {
   // NULL, NULL);
   io.Fonts->AddFontFromMemoryCompressedTTF(
       SourceCodePro_Regular_compressed_data,
-      SourceCodePro_Regular_compressed_size, dpi_scaling * 6.0f);
+      SourceCodePro_Regular_compressed_size, 24.0f);
 
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-  bool done = false;
-  while (!done) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-      ImGui_ImplSDL2_ProcessEvent(&event);
-      if (event.type == SDL_QUIT) {
-        done = true;
-      }
-      if (event.type == SDL_WINDOWEVENT &&
-          event.window.event == SDL_WINDOWEVENT_CLOSE &&
-          event.window.windowID == SDL_GetWindowID(window)) {
-        done = true;
-      }
-    }
+  while (!glfwWindowShouldClose(window)) {
+    glfwPollEvents();
 
-    ImGui_ImplSDLRenderer_NewFrame();
-    ImGui_ImplSDL2_NewFrame(window);
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
@@ -228,22 +269,23 @@ int main(int, char **) {
     }
 
     ImGui::Render();
-    SDL_SetRenderDrawColor(renderer, (uint8_t)(clear_color.x * 255),
-                           (uint8_t)(clear_color.y * 255),
-                           (uint8_t)(clear_color.z * 255),
-                           (uint8_t)(clear_color.w * 255));
-    SDL_RenderClear(renderer);
-    ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
-    SDL_RenderPresent(renderer);
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor((clear_color.x * clear_color.w),
+                 (clear_color.y * clear_color.w),
+                 (clear_color.z * clear_color.w), (clear_color.w));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    glfwSwapBuffers(window);
   }
 
-  ImGui_ImplSDLRenderer_Shutdown();
-  ImGui_ImplSDL2_Shutdown();
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  SDL_DestroyRenderer(renderer);
-  SDL_DestroyWindow(window);
-  SDL_Quit();
+  glfwDestroyWindow(window);
+  glfwTerminate();
 
   return 0;
 }

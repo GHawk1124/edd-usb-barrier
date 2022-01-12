@@ -25,7 +25,8 @@ if (APPLE)
         /usr/local/include
         /opt/local/include
         /opt/homebrew/include
-        /opt/homebrew/include/SDL2
+        /opt/homebrew/include/GL
+        /opt/homebrew/include/GLFW
         /opt/homebrew/include/freetype2
     )
 elseif (WIN32)
@@ -47,8 +48,8 @@ file(GLOB SRC
 )
 
 file (GLOB PLATFORM_SRC
-    ./external/imgui/backends/imgui_impl_sdl.*
-    ./external/imgui/backends/imgui_impl_sdlrenderer.*
+    ./external/imgui/backends/imgui_impl_glfw.*
+    ./external/imgui/backends/imgui_impl_opengl3.*
     ./src/*.cpp
 )
 
@@ -73,7 +74,8 @@ if (WIN32)
     # )
 elseif (APPLE)
     find_library(OPENGL_LIBRARY OpenGL REQUIRED)
-    find_library(SDL_LIBRARY SDL2 REQUIRED)
+    find_library(GLES_LIBRARY GLESv2 REQUIRED)
+    find_library(GLFW_LIBRARY GLFW REQUIRED)
     find_library(COCOA_LIBRARY Cocoa REQUIRED)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVID_LIBRARY CoreVideo REQUIRED)
@@ -84,7 +86,8 @@ elseif (APPLE)
 
     target_link_libraries(${PROJECT_NAME}
         ${OPEN_GL_LIBRARY}
-        ${SDL_LIBRARY}
+        ${GLES_LIBRARY}
+        ${GLFW_LIBRARY}
         ${COCOA_LIBRARY}
         ${IOKIT_LIBRARY}
         ${COREVID_LIBRARY}
@@ -93,7 +96,7 @@ elseif (APPLE)
 elseif (UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME}
         GL
-        SDL2
+        glfw
         dl
         freetype
     )
