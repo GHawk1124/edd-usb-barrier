@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
+
+if (MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -pedantic)
+endif()
+
 # set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 add_executable(btc.bin external/imgui/misc/fonts/binary_to_compressed_c.cpp)
 execute_process(
