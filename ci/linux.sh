@@ -1,4 +1,4 @@
-git pull
+#git pull
 mkdir -p build
 cd build
 cmake ..

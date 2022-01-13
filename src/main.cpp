@@ -140,12 +140,19 @@ int main(int, char **) {
 #elif defined(_WIN32)
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-#else
+/*
+ *#else
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+*/
+#else
+  const char* glsl_version = "#version 130";
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-
-  float highDPIscaleFactor = 1.0;
+ 
+float highDPIscaleFactor = 1.0;
 #ifdef _WIN32
   // if it's a HighDPI monitor, try to scale everything
   GLFWmonitor *monitor = glfwGetPrimaryMonitor();
@@ -209,7 +216,7 @@ int main(int, char **) {
   // - Read 'docs/FONTS.md' for more instructions and details.
   // - Remember that in C/C++ if you want to include a backslash \ in a string
   // literal you need to write a double backslash \\ !
-  // io.Fonts->AddFontDefault();
+  io.Fonts->AddFontDefault();
   // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
   // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
   // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
@@ -220,10 +227,11 @@ int main(int, char **) {
   // io.Fonts->AddFontFromFileTTF(
   // "./assets/SourceCodePro/SourceCodePro-Regular.ttf", dpi_scaling * 6.0f,
   // NULL, NULL);
-  io.Fonts->AddFontFromMemoryCompressedTTF(
+  /*
+   * io.Fonts->AddFontFromMemoryCompressedTTF(
       SourceCodePro_Regular_compressed_data,
       SourceCodePro_Regular_compressed_size, 24.0f);
-
+  */
   bool show_another_window = false;
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -242,9 +250,22 @@ int main(int, char **) {
     {
       static float f = 0.0f;
       static int counter = 0;
-      ImGui::Begin("Hello, world!", NULL,
+      ImGui::Begin("USB Barrier", NULL,
                    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
-      ImGui::Text("This is some useful text.");
+     
+      ImGui::ShowStackToolWindow();
+      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+      ImGui::SameLine();
+      static bool device1 = true;
+      static bool device2 = false;
+      static bool device3 = false;
+      static bool device4 = false;
+      ImGui::Checkbox("Approve Device 1", &device1);
+      ImGui::Checkbox("Approve Device 2", &device2);
+      ImGui::Checkbox("Approve Device 3", &device3);
+      ImGui::Checkbox("Approve Device 4", &device4);
+      /*
+       * ImGui::Text("This is some useful text.");
       ImGui::Checkbox("Another Window", &show_another_window);
       ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
       ImGui::ColorEdit3("clear color", (float *)&clear_color);
@@ -256,6 +277,8 @@ int main(int, char **) {
 
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                   1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+      */
+
       ImGui::End();
     }
 
