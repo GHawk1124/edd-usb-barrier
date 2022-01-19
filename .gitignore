@@ -1,3 +1,7 @@
-/build
+build
 imgui.ini
-/assets/bin_fonts
+assets/bin_fonts
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
