@@ -1,4 +1,4 @@
-obj-m += usb_driver.o
+obj-m += driver.o
 
 KDIR = /lib/modules/$(shell uname -r)/build
 
