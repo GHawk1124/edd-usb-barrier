@@ -1,15 +1,9 @@
+obj-m += usb_driver.o
 
-ifneq ($(KERNELRELEASE),)
-    obj-m := hello.o
+KDIR = /lib/modules/$(shell uname -r)/build
 
-else
-
-    KERN_DIR ?= /usr/src/linux-headers-$(shell uname -r)/
-    PWD := $(shell pwd)
-
-default:
-    $(MAKE) -C $(KERN_DIR) M=$(PWD) modules
-endif
+all:
+        make -C $(KDIR)  M=$(shell pwd) modules
 
 clean:
-    rm -rf *.o *~ core .depend .*.cmd *.ko *.mod.c .tmp_versions
+        make -C $(KDIR)  M=$(shell pwd) clean
