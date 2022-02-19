@@ -1,0 +1,1 @@
+cmd_/home/doug/edd-usb-barrier/kernel_modules/linux-module/driver.mod := { echo  /home/doug/edd-usb-barrier/kernel_modules/linux-module/driver.o;  echo; } > /home/doug/edd-usb-barrier/kernel_modules/linux-module/driver.mod

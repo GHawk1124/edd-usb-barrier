@@ -3,8 +3,8 @@
 #include <linux/usb.h>
 
 #define IS_NEW_METHOD_USED (1)
-#define USB_VENDOR_ID (0x22d9)  // USB device's vendor ID
-#define USB_PRODUCT_ID (0x2764) // USB device's product ID
+// #define USB_VENDOR_ID (0x22d9)  // USB device's vendor ID
+// #define USB_PRODUCT_ID (0x2764) // USB device's product ID
 #define PRINT_USB_INTERFACE_DESCRIPTOR(i)                                      \
   {                                                                            \
     pr_info("USB_INTERFACE_DESCRIPTOR:\n");                                    \
@@ -36,12 +36,14 @@
 /*
 ** This function will be called when USB device is inserted.
 */
-static int usb_probe(struct usb_interface *interface, const struct usb_device_id *id) {
+static int usb_probe(struct usb_interface *interface) {
   unsigned int i;
   unsigned int endpoints_count;
   struct usb_host_interface *iface_desc = interface->cur_altsetting;
-  dev_info(&interface->dev, "USB Driver Probed: Vendor ID : 0x%02x,\t"
-  "Product ID : 0x%02x\n", id->idVendor, id->idProduct);
+  // dev_info(&interface->dev,
+  // "USB Driver Probed: Vendor ID : 0x%02x,\t"
+  // "Product ID : 0x%02x\n",
+  // id->idVendor, id->idProduct);
 
   endpoints_count = iface_desc->desc.bNumEndpoints;
 
@@ -62,11 +64,11 @@ static void usb_disconnect(struct usb_interface *interface) {
 
 // usb_device_id provides a list of different types of USB devices that the
 // driver supports
-const struct usb_device_id usb_table[] = {
-{USB_DEVICE(USB_VENDOR_ID,
-USB_PRODUCT_ID)}, // Put your USB device's Vendor and Product ID
-{ }
-};
+// const struct usb_device_id usb_table[] = {
+// {USB_DEVICE(USB_VENDOR_ID,
+// USB_PRODUCT_ID)}, // Put your USB device's Vendor and Product ID
+// {}                            [> Terminating entry <]
+// };
 
 // This enable the linux hotplug system to load the driver automatically when
 // the device is plugged in
@@ -95,7 +97,7 @@ module_init(usb_init);
 module_exit(usb_exit);
 #endif
 
-MODULE_LICENSE("GPL");
+// MODULE_LICENSE("MIT");
 MODULE_AUTHOR("Garrett Comes <garrett@garrettcomes.com>");
 MODULE_DESCRIPTION("USB Blocker");
 MODULE_VERSION("1.0");

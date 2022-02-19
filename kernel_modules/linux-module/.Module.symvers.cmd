@@ -1,0 +1,1 @@
+cmd_/home/doug/edd-usb-barrier/kernel_modules/linux-module/Module.symvers := sed 's/\.ko$$/\.o/' /home/doug/edd-usb-barrier/kernel_modules/linux-module/modules.order | scripts/mod/modpost -m -a  -o /home/doug/edd-usb-barrier/kernel_modules/linux-module/Module.symvers -e -i Module.symvers   -T -
