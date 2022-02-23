@@ -11,4 +11,5 @@ else
   exit 1
 fi
 make
+./edd_USB_Barrier
 cd .. || exit

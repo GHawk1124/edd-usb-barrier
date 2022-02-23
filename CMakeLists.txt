@@ -21,6 +21,9 @@ project(edd_USB_Barrier)
 
 # add header path
 include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}/external/hidapi/hidapi
+	${CMAKE_CURRENT_SOURCE_DIR}/external/hidapi/mac
+	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/backends
 	${CMAKE_CURRENT_SOURCE_DIR}/external/imgui/misc/freetype
@@ -35,6 +38,7 @@ if (APPLE)
         /opt/homebrew/include/GL
         /opt/homebrew/include/GLFW
         /opt/homebrew/include/freetype2
+        /opt/homebrew/Cellar/libusb/1.0.25/include/libusb-1.0/
     )
 elseif (WIN32)
     include_directories(
@@ -87,6 +91,8 @@ elseif (APPLE)
     find_library(IOKIT_LIBRARY IOKit REQUIRED)
     find_library(COREVID_LIBRARY CoreVideo REQUIRED)
     find_library(FREETYPE_LIBRARY freetype REQUIRED)
+    find_library(LIBUSB_LIBRARY usb-1.0 REQUIRED)
+    find_library(HIDAPI_LIBRARY hid REQUIRED)
     message(${COCOA_LIBRARY})
     message(${IOKIT_LIBRARY})
     message(${COREVID_LIBRARY})
@@ -99,6 +105,8 @@ elseif (APPLE)
         ${IOKIT_LIBRARY}
         ${COREVID_LIBRARY}
         ${FREETYPE_LIBRARY}
+        ${LIBUSB_LIBRARY}
+        ${HIDAPI_LIBRARY}
     )
 elseif (UNIX AND NOT APPLE)
     target_link_libraries(${PROJECT_NAME}

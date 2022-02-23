@@ -9,14 +9,43 @@
 #include <freetype/freetype.h>
 #include <ft2build.h>
 
+#include <fstream>
+#include <iostream>
+#include <libusb.h>
 #include <stdio.h>
+#include <string>
 
 #include "fonts.h"
+#include "style.hpp"
+
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/hid/IOHIDKeys.h>
+#include <IOKit/hid/IOHIDManager.h>
+#include <IOKit/usb/USBSpec.h>
+#include <dlfcn.h>
+#include <locale.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <wchar.h>
+
+#include "hidapi.h"
+#endif
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) &&                                 \
     !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+
+void blacklistUSBFileLinux() {
+  std::ofstream outfile("/etc/modprobe.d/blacklist.conf");
+  outfile << "blacklist usb-storage" << std::endl;
+  outfile.close();
+  system("rmmod usb-storage");
+  system("shutdown -r now");
+}
 
 static void framebuffer_size_callback(GLFWwindow *window, int width,
                                       int height) {
@@ -27,92 +56,10 @@ static void glfw_error_callback(int error, const char *description) {
   fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
 
-inline void Style() {
-  ImGuiStyle &style = ImGui::GetStyle();
-  ImVec4 *colors = style.Colors;
-
-  int is3D = 1;
-
-  colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-  colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
-  colors[ImGuiCol_ChildBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-  colors[ImGuiCol_WindowBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-  colors[ImGuiCol_PopupBg] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-  colors[ImGuiCol_Border] = ImVec4(0.12f, 0.12f, 0.12f, 0.71f);
-  colors[ImGuiCol_BorderShadow] = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-  colors[ImGuiCol_FrameBg] = ImVec4(0.42f, 0.42f, 0.42f, 0.54f);
-  colors[ImGuiCol_FrameBgHovered] = ImVec4(0.42f, 0.42f, 0.42f, 0.40f);
-  colors[ImGuiCol_FrameBgActive] = ImVec4(0.56f, 0.56f, 0.56f, 0.67f);
-  colors[ImGuiCol_TitleBg] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
-  colors[ImGuiCol_TitleBgActive] = ImVec4(0.22f, 0.22f, 0.22f, 1.00f);
-  colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.17f, 0.17f, 0.17f, 0.90f);
-  colors[ImGuiCol_MenuBarBg] = ImVec4(0.335f, 0.335f, 0.335f, 1.000f);
-  colors[ImGuiCol_ScrollbarBg] = ImVec4(0.24f, 0.24f, 0.24f, 0.53f);
-  colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
-  colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
-  colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
-  colors[ImGuiCol_CheckMark] = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
-  colors[ImGuiCol_SliderGrab] = ImVec4(0.52f, 0.52f, 0.52f, 1.00f);
-  colors[ImGuiCol_SliderGrabActive] = ImVec4(0.64f, 0.64f, 0.64f, 1.00f);
-  colors[ImGuiCol_Button] = ImVec4(0.54f, 0.54f, 0.54f, 0.35f);
-  colors[ImGuiCol_ButtonHovered] = ImVec4(0.52f, 0.52f, 0.52f, 0.59f);
-  colors[ImGuiCol_ButtonActive] = ImVec4(0.76f, 0.76f, 0.76f, 1.00f);
-  colors[ImGuiCol_Header] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-  colors[ImGuiCol_HeaderHovered] = ImVec4(0.47f, 0.47f, 0.47f, 1.00f);
-  colors[ImGuiCol_HeaderActive] = ImVec4(0.76f, 0.76f, 0.76f, 0.77f);
-  colors[ImGuiCol_Separator] = ImVec4(0.000f, 0.000f, 0.000f, 0.137f);
-  colors[ImGuiCol_SeparatorHovered] = ImVec4(0.700f, 0.671f, 0.600f, 0.290f);
-  colors[ImGuiCol_SeparatorActive] = ImVec4(0.702f, 0.671f, 0.600f, 0.674f);
-  colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
-  colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
-  colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-  colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
-  colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
-  colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
-  colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
-  colors[ImGuiCol_TextSelectedBg] = ImVec4(0.73f, 0.73f, 0.73f, 0.35f);
-  colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
-  colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-  colors[ImGuiCol_NavHighlight] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
-  colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
-  colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
-
-  style.PopupRounding = 3;
-
-  style.WindowPadding = ImVec2(4, 4);
-  style.FramePadding = ImVec2(6, 4);
-  style.ItemSpacing = ImVec2(6, 2);
-
-  style.ScrollbarSize = 18;
-
-  style.WindowBorderSize = 1;
-  style.ChildBorderSize = 1;
-  style.PopupBorderSize = 1;
-  style.FrameBorderSize = is3D;
-
-  style.WindowRounding = 0;
-  style.ChildRounding = 3;
-  style.FrameRounding = 3;
-  style.ScrollbarRounding = 2;
-  style.GrabRounding = 3;
-
-#ifdef IMGUI_HAS_DOCK
-  style.TabBorderSize = is3D;
-  style.TabRounding = 3;
-
-  colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-  colors[ImGuiCol_Tab] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-  colors[ImGuiCol_TabHovered] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
-  colors[ImGuiCol_TabActive] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-  colors[ImGuiCol_TabUnfocused] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-  colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.33f, 0.33f, 0.33f, 1.00f);
-  colors[ImGuiCol_DockingPreview] = ImVec4(0.85f, 0.85f, 0.85f, 0.28f);
-
-  if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    style.WindowRounding = 0.0f;
-    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-  }
-#endif
+void TextCenter(std::string text) {
+  float font_size = ImGui::GetFontSize() * text.size() / 2;
+  ImGui::SameLine(ImGui::GetWindowSize().x / 2 - font_size + (font_size / 2));
+  ImGui::Text(text.c_str());
 }
 
 int main(int, char **) {
@@ -159,27 +106,7 @@ int main(int, char **) {
   // to prevent 1200x800 from becoming 2400x1600
   glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 #endif
-
-  // float ddpi, hdpi, vdpi;
-  // if (SDL_GetDisplayDPI(0, &ddpi, &hdpi, &vdpi) != 0) {
-  // fprintf(stderr, "Failed to obtain DPI information for display 0: %s\n",
-  // SDL_GetError());
-  // exit(1);
-  // }
-  // float dpi_scaling = ddpi / 72.f;
-  // SDL_Rect display_bounds;
-  // if (SDL_GetDisplayUsableBounds(0, &display_bounds) != 0) {
-  // fprintf(stderr, "Failed to obtain bounds of display 0: %s\n",
-  // SDL_GetError());
-  // exit(1);
-  // }
-  // int win_w = display_bounds.w * 7 / 8, win_h = display_bounds.h * 7 / 8;
-  //
-  // SDL_WindowFlags window_flags =
-  // (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-  // SDL_Window *window =
-  // SDL_CreateWindow("USB Barrier", SDL_WINDOWPOS_CENTERED,
-  // SDL_WINDOWPOS_CENTERED, win_w, win_h, window_flags);
+  glfwWindowHint(GLFW_DECORATED, false); // Remove Title Bar
 
   GLFWwindow *window = glfwCreateWindow(1280, 720, "USB BARRIER", NULL, NULL);
   if (!window) {
@@ -190,42 +117,44 @@ int main(int, char **) {
   glfwMakeContextCurrent(window);
   glfwSwapInterval(1); // Enable VSYNC
 
-  // SDL_Renderer *renderer = SDL_CreateRenderer(
-  // window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
-  // if (renderer == NULL) {
-  // SDL_Log("Error creating SDL_Renderer!");
-  // return -1;
-  // }
-
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   (void)io;
-  Style();
+  imGuiStyle();
 
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
 
-  // - Read 'docs/FONTS.md' for more instructions and details.
-  // - Remember that in C/C++ if you want to include a backslash \ in a string
-  // literal you need to write a double backslash \\ !
-  // io.Fonts->AddFontDefault();
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-  // io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-  // ImFont* font =
-  // io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f,
-  // NULL, io.Fonts->GetGlyphRangesJapanese()); IM_ASSERT(font != NULL);
-  // io.Fonts->AddFontFromFileTTF(
-  // "./assets/SourceCodePro/SourceCodePro-Regular.ttf", dpi_scaling * 6.0f,
-  // NULL, NULL);
   io.Fonts->AddFontFromMemoryCompressedTTF(
       SourceCodePro_Regular_compressed_data,
       SourceCodePro_Regular_compressed_size, 24.0f);
 
-  bool show_another_window = false;
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  bool enableOrDisable = false;
+
+  libusb_context *context = nullptr;
+  if (libusb_init(&context) != LIBUSB_SUCCESS) {
+    std::cout << "Failed to init Libusb" << std::endl;
+    return -1;
+  }
+
+  // #define MAX_STR 255
+  // int res;
+  // unsigned char buf[65];
+  // wchar_t wstr[MAX_STR];
+  // hid_device *handle;
+  // int i;
+  // res = hid_init();
+  // handle = hid_open(0x4d8, 0x3f, NULL);
+  // res = hid_get_manufacturer_string(handle, wstr, MAX_STR);
+  // wprintf(L"Manufacturer String: %s\n", wstr);
+  // res = hid_get_product_string(handle, wstr, MAX_STR);
+  // wprintf(L"Product String: %s\n", wstr);
+  // res = hid_get_serial_number_string(handle, wstr, MAX_STR);
+  // wprintf(L"Serial Number String: (%d) %s\n", wstr[0], wstr);
+  // res = hid_get_indexed_string(handle, 1, wstr, MAX_STR);
+  // wprintf(L"Indexed String 1: %s\n", wstr);
+  // res = hid_exit();
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -238,47 +167,95 @@ int main(int, char **) {
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
+    // libusb_device **usb_list = nullptr;
+    // const int cnt = libusb_get_device_list(context, &usb_list);
+    const int cnt = 0;
+    // if (cnt < 0) {
+    // std::cout << "Failed getting device list" << std::endl;
+    // libusb_exit(context);
+    // return 0;
+    // }
+
     // GUI Code Here
     {
-      static float f = 0.0f;
-      static int counter = 0;
-      ImGui::Begin("Hello, world!", NULL,
+      ImGui::Begin("USB Barrier Prototype", NULL,
                    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
-      ImGui::Text("This is some useful text.");
-      ImGui::Checkbox("Another Window", &show_another_window);
-      ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-      ImGui::ColorEdit3("clear color", (float *)&clear_color);
-      if (ImGui::Button("Button")) {
-        counter++;
-      }
-      ImGui::SameLine();
-      ImGui::Text("counter = %d", counter);
+      std::string mainText = "USB Barrier Software";
+      TextCenter(mainText);
+      ImGui::NewLine();
+      ImGui::Checkbox("Protection Enable/Disable", &enableOrDisable);
 
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+      enum ContentsType { CT_Text, CT_FillButton };
+      static ImGuiTableFlags flags =
+          ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
+      static bool display_headers = true;
+      static int contents_type = CT_Text;
+
+      if (ImGui::BeginTable("Whitelist/Blacklist", 3, flags)) {
+        if (display_headers) {
+          ImGui::TableSetupColumn("Whitelist");
+          ImGui::TableSetupColumn("Blacklist");
+          ImGui::TableSetupColumn("Currently Connected");
+          ImGui::TableHeadersRow();
+        }
+
+        for (int i = 0; i < cnt; ++i) {
+          // libusb_device_descriptor desc;
+          // libusb_get_device_descriptor(usb_list[i], &desc);
+
+          // int row = 0;
+          // int column = 2;
+          // ImGui::TableNextRow();
+          // ImGui::TableSetColumnIndex(column);
+          // printf((char *)desc.idVendor);
+          // std::cout << std::hex << desc.idVendor << "\n";
+          // ImGui::TextUnformatted((char *)desc.idVendor);
+
+          // libusb_device_handle *handle = nullptr;
+          // if (libusb_open(usb_list[i], &handle) != LIBUSB_SUCCESS)
+          // continue;
+
+          // libusb_claim_interface(handle, 0);
+          // libusb_close(handle);
+        }
+
+        // for (int row = 0; row < sizeof(usb_list) / sizeof(usb_list[0]);
+        // row++) { ImGui::TableNextRow(); libusb_device_handle *handle; int err
+        // = libusb_open(found, &handle); if (err) { std::cout << "Error opening
+        // USB" << std::endl; return 0;
+        // }
+
+        // for (int column = 0; column < 3; column++) {
+        // ImGui::TableSetColumnIndex(column);
+        // char buf[32];
+        // sprintf(buf, "Hello %d,%d", column, row);
+        // if (contents_type == CT_Text)
+        // ImGui::TextUnformatted(buf);
+        // else if (contents_type)
+        // ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
+        // }
+        // }
+        ImGui::EndTable();
+        if (ImGui::Button("Linux Blacklist Devices")) {
+          blacklistUSBFileLinux();
+        }
+      }
+
       ImGui::End();
     }
 
-    if (show_another_window) {
-      ImGui::Begin("Another Window", &show_another_window);
-      ImGui::Text("Hello from another window!");
-      if (ImGui::Button("Close Me")) {
-        show_another_window = false;
-      }
-      ImGui::End();
-    }
+    // libusb_free_device_list(usb_list, 1);
 
     ImGui::Render();
     int display_w, display_h;
     glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    glClearColor((clear_color.x * clear_color.w),
-                 (clear_color.y * clear_color.w),
-                 (clear_color.z * clear_color.w), (clear_color.w));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
   }
+
+  libusb_exit(context);
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
