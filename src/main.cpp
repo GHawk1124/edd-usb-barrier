@@ -40,9 +40,9 @@
 #endif
 
 void blacklistUSBFileLinux() {
-  std::ofstream outfile("/etc/modprobe.d/blacklist.conf");
-  outfile << "blacklist usb-storage" << std::endl;
-  outfile.close();
+  std::ofstream outfile("/etc/modprobe.d/blacklist.conf",
+                        std::ios_base::app | std::ios_base::out);
+  outfile << "blacklist usb-storage\n";
   system("rmmod usb-storage");
   system("shutdown -r now");
 }
