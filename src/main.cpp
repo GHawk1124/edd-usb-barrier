@@ -11,7 +11,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <libusb.h>
+//#include <libusb.h>
 #include <stdio.h>
 #include <string>
 
@@ -88,8 +88,9 @@ int main(int, char **) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #else
+  const char* glsl_version = "#version 150";
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 #endif
 
   float highDPIscaleFactor = 1.0;
@@ -132,11 +133,12 @@ int main(int, char **) {
 
   bool enableOrDisable = false;
 
-  libusb_context *context = nullptr;
+  /*libusb_context *context = nullptr;
   if (libusb_init(&context) != LIBUSB_SUCCESS) {
     std::cout << "Failed to init Libusb" << std::endl;
     return -1;
   }
+  */
 
   // #define MAX_STR 255
   // int res;
@@ -255,7 +257,7 @@ int main(int, char **) {
     glfwSwapBuffers(window);
   }
 
-  libusb_exit(context);
+  //libusb_exit(context);
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();

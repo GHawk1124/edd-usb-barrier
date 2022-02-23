@@ -45,7 +45,8 @@ elseif (WIN32)
     )
 elseif (UNIX AND NOT APPLE)
     include_directories(
-      /usr/local/include/SDL2
+      /usr/include/GL
+      /usr/include/GLFW
       /usr/local/include/freetype2
     )
 endif()
