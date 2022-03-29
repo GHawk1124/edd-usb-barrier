@@ -9,35 +9,44 @@
 #include <freetype/freetype.h>
 #include <ft2build.h>
 
+#include <cstdio>
+#include <vector>
+#include <memory>
+#include <stdexcept>
+#include <array>
 #include <fstream>
 #include <iostream>
-//#include <libusb.h>
 #include <stdio.h>
 #include <string>
 
 #include "fonts.h"
 #include "style.hpp"
 
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/IOKitLib.h>
-#include <IOKit/hid/IOHIDKeys.h>
-#include <IOKit/hid/IOHIDManager.h>
-#include <IOKit/usb/USBSpec.h>
-#include <dlfcn.h>
-#include <locale.h>
-#include <pthread.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <wchar.h>
-
-#include "hidapi.h"
-#endif
-
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) &&                                 \
     !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
+
+std::string exec_lsusb() {
+  std::array<char, 128> buffer;
+  std::string result;
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("lsusb", "r"), pclose);
+  if(!pipe) {
+    throw std::runtime_error("popen() failed!");
+  }
+  while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+    result += buffer.data();
+  }
+  std::cout << result;
+  return result;
+}
+
+void exec_xtrlock() {
+  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("bash -c \"sleep 1 && xtrlock\"", "r"), pclose);
+  if(!pipe) {
+    throw std::runtime_error("popen() failed!");
+  }
+}
 
 void blacklistUSBFileLinux() {
   std::ofstream outfile("/etc/modprobe.d/blacklist.conf",
@@ -107,7 +116,7 @@ int main(int, char **) {
   // to prevent 1200x800 from becoming 2400x1600
   glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
 #endif
-  glfwWindowHint(GLFW_DECORATED, false); // Remove Title Bar
+  // glfwWindowHint(GLFW_DECORATED, false); // Remove Title Bar
 
   GLFWwindow *window = glfwCreateWindow(1280, 720, "USB BARRIER", NULL, NULL);
   if (!window) {
@@ -131,32 +140,8 @@ int main(int, char **) {
       SourceCodePro_Regular_compressed_data,
       SourceCodePro_Regular_compressed_size, 24.0f);
 
-  bool enableOrDisable = false;
-
-  /*libusb_context *context = nullptr;
-  if (libusb_init(&context) != LIBUSB_SUCCESS) {
-    std::cout << "Failed to init Libusb" << std::endl;
-    return -1;
-  }
-  */
-
-  // #define MAX_STR 255
-  // int res;
-  // unsigned char buf[65];
-  // wchar_t wstr[MAX_STR];
-  // hid_device *handle;
-  // int i;
-  // res = hid_init();
-  // handle = hid_open(0x4d8, 0x3f, NULL);
-  // res = hid_get_manufacturer_string(handle, wstr, MAX_STR);
-  // wprintf(L"Manufacturer String: %s\n", wstr);
-  // res = hid_get_product_string(handle, wstr, MAX_STR);
-  // wprintf(L"Product String: %s\n", wstr);
-  // res = hid_get_serial_number_string(handle, wstr, MAX_STR);
-  // wprintf(L"Serial Number String: (%d) %s\n", wstr[0], wstr);
-  // res = hid_get_indexed_string(handle, 1, wstr, MAX_STR);
-  // wprintf(L"Indexed String 1: %s\n", wstr);
-  // res = hid_exit();
+  std::string lsusb_result;
+  int lsusb_count = 1000;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -167,16 +152,13 @@ int main(int, char **) {
 
     ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-
-    // libusb_device **usb_list = nullptr;
-    // const int cnt = libusb_get_device_list(context, &usb_list);
     const int cnt = 0;
-    // if (cnt < 0) {
-    // std::cout << "Failed getting device list" << std::endl;
-    // libusb_exit(context);
-    // return 0;
-    // }
+
+    lsusb_count++;
+    if (lsusb_count == 1000) {
+      lsusb_result = exec_lsusb();
+      lsusb_count = 0;
+    }
 
     // GUI Code Here
     {
@@ -185,68 +167,49 @@ int main(int, char **) {
       std::string mainText = "USB Barrier Software";
       TextCenter(mainText);
       ImGui::NewLine();
-      ImGui::Checkbox("Protection Enable/Disable", &enableOrDisable);
 
+      if(ImGui::Button("Protection Enable/Disable")) {
+        exec_xtrlock();
+      }
       enum ContentsType { CT_Text, CT_FillButton };
       static ImGuiTableFlags flags =
           ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
       static bool display_headers = true;
       static int contents_type = CT_Text;
 
-      if (ImGui::BeginTable("Whitelist/Blacklist", 3, flags)) {
+      int number_of_devices = 0;
+      std::stringstream result(lsusb_result);
+      std::string result_line;
+      std::vector<std::string> devices;
+      while (std::getline(result, result_line, "\n")) {
+        devices.push_back(result_line);
+        number_of_devices++;
+      }
+
+      if (ImGui::BeginTable("Connected Devices", 1, flags)) {
         if (display_headers) {
-          ImGui::TableSetupColumn("Whitelist");
-          ImGui::TableSetupColumn("Blacklist");
           ImGui::TableSetupColumn("Currently Connected");
           ImGui::TableHeadersRow();
         }
-
-        for (int i = 0; i < cnt; ++i) {
-          // libusb_device_descriptor desc;
-          // libusb_get_device_descriptor(usb_list[i], &desc);
-
-          // int row = 0;
-          // int column = 2;
-          // ImGui::TableNextRow();
-          // ImGui::TableSetColumnIndex(column);
-          // printf((char *)desc.idVendor);
-          // std::cout << std::hex << desc.idVendor << "\n";
-          // ImGui::TextUnformatted((char *)desc.idVendor);
-
-          // libusb_device_handle *handle = nullptr;
-          // if (libusb_open(usb_list[i], &handle) != LIBUSB_SUCCESS)
-          // continue;
-
-          // libusb_claim_interface(handle, 0);
-          // libusb_close(handle);
+        for (int row = 0; row < number_of_devices; row++) {
+          ImGui::TableNextRow();
+          ImGui::TableSetColumnIndex(0);
+          char buf[32];
+          sprintf(buf, "hello", 0, row);
+          ImGui::TextUnformatted(buf);
         }
 
-        // for (int row = 0; row < sizeof(usb_list) / sizeof(usb_list[0]);
-        // row++) { ImGui::TableNextRow(); libusb_device_handle *handle; int err
-        // = libusb_open(found, &handle); if (err) { std::cout << "Error opening
-        // USB" << std::endl; return 0;
-        // }
-
-        // for (int column = 0; column < 3; column++) {
-        // ImGui::TableSetColumnIndex(column);
-        // char buf[32];
-        // sprintf(buf, "Hello %d,%d", column, row);
-        // if (contents_type == CT_Text)
-        // ImGui::TextUnformatted(buf);
-        // else if (contents_type)
-        // ImGui::Button(buf, ImVec2(-FLT_MIN, 0.0f));
-        // }
-        // }
-        ImGui::EndTable();
-        if (ImGui::Button("Linux Blacklist Devices")) {
-          blacklistUSBFileLinux();
-        }
       }
+
+      ImGui::EndTable();
+      if (ImGui::Button("Linux Blacklist Storage Devices (Requires Restart)")) {
+        blacklistUSBFileLinux();
+      }
+      
+    }
 
       ImGui::End();
     }
-
-    // libusb_free_device_list(usb_list, 1);
 
     ImGui::Render();
     int display_w, display_h;
