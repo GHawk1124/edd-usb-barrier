@@ -27,17 +27,34 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+void tokenize(std::string const &str, const char* delim,
+            std::vector<std::string> &out)
+{
+    out.clear();
+    char *token = strtok(const_cast<char*>(str.c_str()), delim);
+    while (token != nullptr)
+    {
+        out.push_back(std::string(token));
+        token = strtok(nullptr, delim);
+    }
+}
+
 std::string exec_lsusb() {
-  std::array<char, 128> buffer;
-  std::string result;
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen("lsusb", "r"), pclose);
+  char buffer[128];
+  std::string result = "";
+  FILE* pipe = popen("lsusb", "r");
   if(!pipe) {
     throw std::runtime_error("popen() failed!");
   }
-  while(fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-    result += buffer.data();
+  try {
+    while(fgets(buffer, sizeof buffer, pipe) != NULL) {
+      result += buffer;
+    }
+  } catch (...) {
+    pclose(pipe);
+    throw;
   }
-  std::cout << result;
+  pclose(pipe);
   return result;
 }
 
@@ -141,7 +158,9 @@ int main(int, char **) {
       SourceCodePro_Regular_compressed_size, 24.0f);
 
   std::string lsusb_result;
-  int lsusb_count = 1000;
+  int lsusb_count = 300;
+
+  std::vector<std::string> devices;
 
   while (!glfwWindowShouldClose(window)) {
     glfwPollEvents();
@@ -154,11 +173,12 @@ int main(int, char **) {
     ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
     const int cnt = 0;
 
-    lsusb_count++;
-    if (lsusb_count == 1000) {
+    if (lsusb_count == 300) {
       lsusb_result = exec_lsusb();
       lsusb_count = 0;
+      tokenize(lsusb_result, "\n", devices);
     }
+    lsusb_count++;
 
     // GUI Code Here
     {
@@ -177,25 +197,16 @@ int main(int, char **) {
       static bool display_headers = true;
       static int contents_type = CT_Text;
 
-      int number_of_devices = 0;
-      std::stringstream result(lsusb_result);
-      std::string result_line;
-      std::vector<std::string> devices;
-      while (std::getline(result, result_line, "\n")) {
-        devices.push_back(result_line);
-        number_of_devices++;
-      }
-
       if (ImGui::BeginTable("Connected Devices", 1, flags)) {
         if (display_headers) {
           ImGui::TableSetupColumn("Currently Connected");
           ImGui::TableHeadersRow();
         }
-        for (int row = 0; row < number_of_devices; row++) {
+        for (int row = 0; row < devices.size(); row++) {
           ImGui::TableNextRow();
           ImGui::TableSetColumnIndex(0);
           char buf[32];
-          sprintf(buf, "hello", 0, row);
+          sprintf(buf, devices[row].c_str(), 0, row);
           ImGui::TextUnformatted(buf);
         }
 
@@ -206,8 +217,6 @@ int main(int, char **) {
         blacklistUSBFileLinux();
       }
       
-    }
-
       ImGui::End();
     }
 
@@ -219,8 +228,6 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
   }
-
-  //libusb_exit(context);
 
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
